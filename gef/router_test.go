@@ -1,4 +1,4 @@
-package gee
+package gef
 
 import (
 	"fmt"
@@ -19,7 +19,7 @@ func newTestRouter() *router {
 func TestParsePattern(t *testing.T) {
 	ok := reflect.DeepEqual(parsePattern("/p/:name"), []string{"p", ":name"})
 	ok = ok && reflect.DeepEqual(parsePattern("/p/*"), []string{"p", "*"})
-	ok = ok && reflect.DeepEqual(parsePattern("/p/:name/*"), []string{"p", "*name"})
+	ok = ok && reflect.DeepEqual(parsePattern("/p/*name/*"), []string{"p", "*name"})
 	if !ok {
 		t.Fatalf("test parsePattern failed")
 	}
