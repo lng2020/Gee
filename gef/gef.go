@@ -1,6 +1,7 @@
 package gef
 
 import (
+	"log"
 	"net/http"
 )
 
@@ -36,16 +37,19 @@ func (group *RouterGroup) Group(prefix string) *RouterGroup {
 	engine.groups = append(engine.groups, newGroup)
 	return newGroup
 }
-func (group *RouterGroup) addRoute(method string, pattern string, handler HandlerFunc) {
-	group.addRoute(method, pattern, handler)
+
+func (group *RouterGroup) addRoute(method string, comp string, handler HandlerFunc) {
+	pattern := group.prefix + comp
+	log.Printf("Route %4s - %s", method, pattern)
+	group.engine.router.addRoute(method, pattern, handler)
 }
 
-func (engine *Engine) GET(pattern string, handler HandlerFunc) {
-	engine.addRoute("GET", pattern, handler)
+func (group *RouterGroup) GET(pattern string, handler HandlerFunc) {
+	group.addRoute("GET", pattern, handler)
 }
 
-func (engine *Engine) POST(pattrn string, handler HandlerFunc) {
-	engine.addRoute("POST", pattrn, handler)
+func (group *RouterGroup) POST(pattrn string, handler HandlerFunc) {
+	group.addRoute("POST", pattrn, handler)
 }
 
 func (engine *Engine) Run(addr string) (err error) {
