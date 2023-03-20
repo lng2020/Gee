@@ -2,11 +2,22 @@ package main
 
 import (
 	"gef"
+	"log"
 	"net/http"
+	"time"
 )
+
+func onlyForv2() gef.HandlerFunc {
+	return func(c *gef.Context) {
+		t := time.Now()
+		c.Fail(500, "Internal Server Error")
+		log.Printf("[%d] %s in %v for group v2", c.StatusCode, c.Req.RequestURI, time.Since(t))
+	}
+}
 
 func main() {
 	r := gef.New()
+	r.Use(gef.Logger())
 	r.GET("/", func(c *gef.Context) {
 		c.HTML(http.StatusOK, "<h1>Hello Gee</h1>")
 	})
@@ -24,6 +35,7 @@ func main() {
 	}
 
 	v2 := r.Group("/v2")
+	v2.Use(onlyForv2())
 	{
 		v2.GET("/hello/:name", func(c *gef.Context) {
 			c.String(http.StatusOK, "hello %s, you're at %s\n", c.Param("name"), c.Path)
