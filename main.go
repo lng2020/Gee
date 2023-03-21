@@ -17,6 +17,7 @@ func onlyForv2() gef.HandlerFunc {
 
 func main() {
 	r := gef.New()
+	// r.Static("/assets", "/")
 	r.Use(gef.Logger())
 	r.GET("/", func(c *gef.Context) {
 		c.HTML(http.StatusOK, "<h1>Hello Gee</h1>")
