@@ -1,7 +1,7 @@
-module Gee
+module goTinyToys
 
 go 1.19
 
-require gef v0.0.0
+require gee v0.0.0
 
-replace gef => ./gef
+replace gee => ./gee

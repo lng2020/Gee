@@ -1,17 +1,17 @@
 package main
 
 import (
-	"gef"
+	"gee"
 	"net/http"
 )
 
 func main() {
-	r := gef.Default()
-	r.GET("/", func(c *gef.Context) {
+	r := gee.Default()
+	r.GET("/", func(c *gee.Context) {
 		c.String(http.StatusOK, "Hello lng2020\n")
 	})
 	// index out of range for testing Recovery()
-	r.GET("/panic", func(c *gef.Context) {
+	r.GET("/panic", func(c *gee.Context) {
 		names := []string{"lng2020"}
 		c.String(http.StatusOK, names[100])
 	})
