@@ -44,9 +44,9 @@ func NewGroup(name string, cacheBytes int64, getter Getter) *Group {
 }
 
 func GetGroup(name string) *Group {
-	mu.RLocker()
+	mu.RLock()
+	defer mu.RUnlock()
 	g := groups[name]
-	mu.RUnlock()
 	return g
 }
 
