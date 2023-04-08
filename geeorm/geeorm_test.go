@@ -3,6 +3,8 @@ package geeorm
 // Import the necessary packages
 import (
 	"testing"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func OpenDB(t *testing.T) *Engine {
