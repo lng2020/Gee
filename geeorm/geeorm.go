@@ -2,6 +2,7 @@ package geeorm
 
 import (
 	"database/sql"
+	"goTinyToys/geeorm/dialect"
 	"goTinyToys/geeorm/log"
 	"goTinyToys/geeorm/session"
 )
@@ -35,5 +36,6 @@ func (engine *Engine) Close() {
 }
 
 func (engine *Engine) NewSession() *session.Session {
-	return session.New(engine.db)
+	dialect, _ := dialect.GetDialect("sqlite3")
+	return session.New(engine.db, dialect)
 }
