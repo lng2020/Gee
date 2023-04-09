@@ -2,14 +2,18 @@ package session
 
 import (
 	"database/sql"
+	"goTinyToys/geeorm/dialect"
 	"goTinyToys/geeorm/log"
+	"goTinyToys/geeorm/schema"
 	"strings"
 )
 
 type Session struct {
-	db      *sql.DB
-	sql     strings.Builder
-	sqlVars []interface{}
+	db       *sql.DB
+	dialect  dialect.Dialect
+	refTable *schema.Schema
+	sql      strings.Builder
+	sqlVars  []interface{}
 }
 
 func New(db *sql.DB) *Session {
