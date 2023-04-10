@@ -13,12 +13,13 @@ const (
 	INSERT Type = iota
 	VALUES
 	SELECT
+	LIMIT
 	UPDATE
 	SET
 	DELETE
-	LIMIT
 	ORDERBY
 	WHERE
+	COUNT
 )
 
 func (c *Clause) Set(name Type, values ...interface{}) {

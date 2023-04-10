@@ -15,6 +15,9 @@ func init() {
 	generators[LIMIT] = genLimit
 	generators[ORDERBY] = genOrderBy
 	generators[WHERE] = genWhere
+	generators[UPDATE] = genUpdate
+	generators[COUNT] = genCount
+	generators[DELETE] = genDelete
 }
 
 func genBindVar(num int) string {
@@ -79,4 +82,31 @@ func genWhere(values ...interface{}) (string, []interface{}) {
 		}
 	}
 	return sql.String(), vars
+}
+
+// genUpdate generates the UPDATE clause
+func genUpdate(values ...interface{}) (string, []interface{}) {
+	tableName := values[0].(string)
+	m := values[1].(map[string]interface{})
+	var sql strings.Builder
+	var vars []interface{}
+	sql.WriteString("UPDATE " + tableName + " SET ")
+	for k, v := range m {
+		sql.WriteString(k + "=?, ")
+		vars = append(vars, v)
+	}
+	var sqlStr = sql.String()
+	sqlStr = sqlStr[:len(sqlStr)-2]
+	return sqlStr, vars
+}
+
+// genDelete generates the DELETE clause
+func genDelete(values ...interface{}) (string, []interface{}) {
+	tableName := values[0].(string)
+	return "DELETE FROM " + tableName, []interface{}{}
+}
+
+// genCount generates the COUNT clause
+func genCount(values ...interface{}) (string, []interface{}) {
+	return genSelect(values[0], []string{"COUNT(*)"})
 }

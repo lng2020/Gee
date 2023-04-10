@@ -2,6 +2,7 @@ package session
 
 import (
 	"database/sql"
+	"errors"
 	"goTinyToys/geeorm/clause"
 	"goTinyToys/geeorm/log"
 	"reflect"
@@ -48,5 +49,74 @@ func (s *Session) Find(values interface{}) (err error) {
 		}
 		destSlice.Set(reflect.Append(destSlice, dest))
 	}
+	return
+}
+
+// Update function is used to update records in database
+func (s *Session) Update(kv ...interface{}) (result sql.Result, err error) {
+	m := make(map[string]interface{})
+	for i := 0; i < len(kv); i += 2 {
+		m[kv[i].(string)] = kv[i+1]
+	}
+	s.clause.Set(clause.UPDATE, s.RefTable().Name, m)
+	sql, vars := s.clause.Build(clause.UPDATE, clause.WHERE)
+	if result, err = s.Raw(sql, vars...).Exec(); err != nil {
+		log.Error(err)
+	}
+	return
+}
+
+// Delete function is used to delete records from database
+func (s *Session) Delete() (result sql.Result, err error) {
+	s.clause.Set(clause.DELETE, s.RefTable().Name)
+	sql, vars := s.clause.Build(clause.DELETE, clause.WHERE)
+	if result, err = s.Raw(sql, vars...).Exec(); err != nil {
+		log.Error(err)
+	}
+	return
+}
+
+// Count function is used to count records in database
+func (s *Session) Count() (count int, err error) {
+	s.clause.Set(clause.COUNT, s.RefTable().Name)
+	sql, vars := s.clause.Build(clause.COUNT, clause.WHERE)
+	row := s.Raw(sql, vars...).QueryRow()
+	if err = row.Scan(&count); err != nil {
+		log.Error(err)
+	}
+	return
+}
+
+// Limit function is used to limit the number of records
+func (s *Session) Limit(num int) *Session {
+	s.clause.Set(clause.LIMIT, num)
+	return s
+}
+
+// OrderBy function is used to sort the records
+func (s *Session) OrderBy(desc string) *Session {
+	s.clause.Set(clause.ORDERBY, desc)
+	return s
+}
+
+// Where function is used to filter the records
+func (s *Session) Where(desc string, args ...interface{}) *Session {
+	var vars []interface{}
+	s.clause.Set(clause.WHERE, append(append(vars, desc), args...)...)
+	return s
+}
+
+// first function is used to get the first record
+func (s *Session) First(value interface{}) (err error) {
+	dest := reflect.Indirect(reflect.ValueOf(value))
+	destSlice := reflect.New(reflect.SliceOf(dest.Type())).Elem()
+	if err = s.Limit(1).Find(destSlice.Addr().Interface()); err != nil {
+		log.Error(err)
+		return
+	}
+	if destSlice.Len() == 0 {
+		err = errors.New("not found")
+	}
+	dest.Set(destSlice.Index(0))
 	return
 }
