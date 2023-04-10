@@ -19,22 +19,6 @@ func TestInsert(t *testing.T) {
 	}
 }
 
-// unit test for Update function in record.go
-func TestUpdate(t *testing.T) {
-	type User struct {
-		Name string `geeorm:"PRIMARY KEY"`
-		Age  int
-	}
-	s := NewSession().Model(&User{})
-	s.DropTable()
-	s.CreateTable()
-	_, _ = s.Insert(&User{"Tom", 18}, &User{"Sam", 25})
-	result, err := s.Where("Name = ?", "Tom").Update("Age", 30)
-	if err != nil || result == nil {
-		t.Fatal("failed to update data in database")
-	}
-}
-
 // unit test for Delete function in record.go
 func TestDelete(t *testing.T) {
 	type User struct {

@@ -1,7 +1,6 @@
 package schema
 
 import (
-	"go/ast"
 	"goTinyToys/geeorm/dialect"
 	"reflect"
 )
@@ -23,26 +22,22 @@ type Schema struct {
 }
 
 func Parse(dest interface{}, d dialect.Dialect) *Schema {
+	modelType := reflect.Indirect(reflect.ValueOf(dest)).Type()
 	schema := &Schema{
 		Model:    dest,
-		Name:     reflect.TypeOf(dest).Elem().Name(),
+		Name:     modelType.Name(),
 		FieldMap: make(map[string]*Field),
 	}
-	val := reflect.ValueOf(dest).Elem()
-	for i := 0; i < val.NumField(); i++ {
-		field := val.Type().Field(i)
-		if !field.Anonymous && ast.IsExported(field.Name) {
-			schema.FieldNames = append(schema.FieldNames, field.Name)
-			f := &Field{
-				Name: field.Name,
-				Type: d.DataTypeOf(reflect.Indirect(reflect.New(field.Type))),
-			}
-			if v, ok := field.Tag.Lookup("geeorm"); ok {
-				f.Tag = v
-			}
-			schema.Fields = append(schema.Fields, f)
-			schema.FieldMap[field.Name] = f
+	for i := 0; i < modelType.NumField(); i++ {
+		p := modelType.Field(i)
+		field := &Field{
+			Name: p.Name,
+			Type: d.DataTypeOf(reflect.Indirect(reflect.New(p.Type))),
+			Tag:  p.Tag.Get("geeorm"),
 		}
+		schema.Fields = append(schema.Fields, field)
+		schema.FieldNames = append(schema.FieldNames, p.Name)
+		schema.FieldMap[p.Name] = field
 	}
 	return schema
 }

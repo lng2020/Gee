@@ -23,12 +23,11 @@ func (s *Session) Insert(values ...interface{}) (result sql.Result, err error) {
 	return
 }
 
-// Find function is used to find records from database
+// Find function is used to find records from database. e.g s.Find(&users)
 func (s *Session) Find(values interface{}) (err error) {
 	destSlice := reflect.Indirect(reflect.ValueOf(values))
 	destType := destSlice.Type().Elem()
 	table := s.Model(reflect.New(destType).Elem().Interface()).RefTable()
-
 	s.clause.Set(clause.SELECT, table.Name, table.FieldNames)
 	sql, vars := s.clause.Build(clause.SELECT, clause.WHERE, clause.ORDERBY, clause.LIMIT)
 	rows, err := s.Raw(sql, vars...).QueryRows()
@@ -37,6 +36,7 @@ func (s *Session) Find(values interface{}) (err error) {
 		return
 	}
 	defer rows.Close()
+	// write query result to values
 	for rows.Next() {
 		dest := reflect.New(destType).Elem()
 		var values []interface{}
@@ -45,7 +45,6 @@ func (s *Session) Find(values interface{}) (err error) {
 		}
 		if err = rows.Scan(values...); err != nil {
 			log.Error(err)
-			return
 		}
 		destSlice.Set(reflect.Append(destSlice, dest))
 	}
@@ -56,20 +55,6 @@ func (s *Session) Find(values interface{}) (err error) {
 func (s *Session) Where(values ...interface{}) *Session {
 	s.clause.Set(clause.WHERE, values...)
 	return s
-}
-
-// Update function is used to update records in database
-func (s *Session) Update(values ...interface{}) (result sql.Result, err error) {
-	table := s.Model(values).RefTable()
-	for i := 0; i < len(values); i += 2 {
-		s.clause.Set(clause.UPDATE, table.Name, values[i], values[i+1])
-	}
-	sql, vars := s.clause.Build(clause.UPDATE, clause.WHERE)
-	if result, err = s.Raw(sql, vars...).Exec(); err != nil {
-		log.Error(err)
-	}
-
-	return
 }
 
 // Delete function is used to delete records from database

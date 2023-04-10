@@ -5,13 +5,15 @@ import (
 	"goTinyToys/geeorm/dialect"
 	"os"
 	"testing"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var TestDB *sql.DB
 var TestDialect, _ = dialect.GetDialect("sqlite3")
 
 func TestMain(m *testing.M) {
-	TestDB, _ = sql.Open("sqlite3", "../gee.db")
+	TestDB, _ = sql.Open("sqlite3", "geeorm.db")
 	code := m.Run()
 	_ = TestDB.Close()
 	os.Exit(code)
@@ -23,7 +25,7 @@ func NewSession() *Session {
 
 func TestSession_Exec(t *testing.T) {
 	s := NewSession()
-	_, _ = s.Raw("DROP TABLE IF EXITS User;").Exec()
+	_, _ = s.Raw("DROP TABLE IF EXISTS User;").Exec()
 	_, _ = s.Raw("CREATE TABLE User(Name text);").Exec()
 	result, _ := s.Raw("INSERT INTO User(`Name`) values (?), (?)", "Tom", "Sam").Exec()
 	if count, err := result.RowsAffected(); err != nil || count != 2 {

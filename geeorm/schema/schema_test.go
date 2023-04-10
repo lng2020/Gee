@@ -19,7 +19,7 @@ func TestParse(t *testing.T) {
 
 	assert.Equal(t, "User", schema.Name)
 	assert.Equal(t, []string{"Name", "Age"}, schema.FieldNames)
-	assert.Equal(t, "VARCHAR(255)", schema.FieldMap["Name"].Type)
-	assert.Equal(t, "INT", schema.FieldMap["Age"].Type)
+	assert.Equal(t, "text", schema.FieldMap["Name"].Type)
+	assert.Equal(t, "bigint", schema.FieldMap["Age"].Type)
 	assert.Equal(t, "PRIMARY KEY", schema.FieldMap["Name"].Tag)
 }

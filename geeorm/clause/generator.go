@@ -29,8 +29,8 @@ func genBindVar(num int) string {
 
 func genInsert(values ...interface{}) (string, []interface{}) {
 	tableName := values[0].(string)
-	fields := values[1].([]string)
-	return "INSERT INTO " + tableName + " (" + strings.Join(fields, ", ") + ") VALUES (" + genBindVar(len(fields)) + ")", []interface{}{}
+	fields := strings.Join(values[1].([]string), ", ")
+	return "INSERT INTO " + tableName + " (" + fields + ")", []interface{}{}
 }
 
 func genValues(values ...interface{}) (string, []interface{}) {
@@ -52,10 +52,9 @@ func genValues(values ...interface{}) (string, []interface{}) {
 }
 
 func genSelect(values ...interface{}) (string, []interface{}) {
-	if len(values) == 0 {
-		return "SELECT *", []interface{}{}
-	}
-	return "SELECT " + strings.Join(values[0].([]string), ", "), []interface{}{}
+	tableName := values[0].(string)
+	fields := strings.Join(values[1].([]string), ", ")
+	return "SELECT " + fields + " FROM " + tableName, []interface{}{}
 }
 
 func genUpdate(values ...interface{}) (string, []interface{}) {
@@ -93,13 +92,14 @@ func genWhere(values ...interface{}) (string, []interface{}) {
 	sql.WriteString("WHERE ")
 
 	for i, expr := range values {
-		if i > 0 {
-			sql.WriteString(" AND ")
+		if i%2 == 0 {
+			if i > 0 {
+				sql.WriteString(" AND ")
+			}
+			sql.WriteString(expr.(string))
+		} else {
+			vars = append(vars, expr)
 		}
-		sql.WriteString(expr.(string))
-		vars = append(vars, values[i+1])
-		i++
 	}
-
 	return sql.String(), vars
 }

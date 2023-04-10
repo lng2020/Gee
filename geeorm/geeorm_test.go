@@ -9,7 +9,7 @@ import (
 
 func OpenDB(t *testing.T) *Engine {
 	t.Helper()
-	engine, err := NewEngine("sqlite3", "gee.db")
+	engine, err := NewEngine("sqlite3", "geeorm.db")
 	if err != nil {
 		t.Fatal("faliled to connect", err)
 	}
