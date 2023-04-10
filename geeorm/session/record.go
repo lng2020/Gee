@@ -29,6 +29,7 @@ func (s *Session) Find(values interface{}) (err error) {
 	destSlice := reflect.Indirect(reflect.ValueOf(values))
 	destType := destSlice.Type().Elem()
 	table := s.Model(reflect.New(destType).Elem().Interface()).RefTable()
+	s.CallMethod(BeforeQuery, nil)
 	s.clause.Set(clause.SELECT, table.Name, table.FieldNames)
 	sql, vars := s.clause.Build(clause.SELECT, clause.WHERE, clause.ORDERBY, clause.LIMIT)
 	rows, err := s.Raw(sql, vars...).QueryRows()
@@ -47,6 +48,7 @@ func (s *Session) Find(values interface{}) (err error) {
 		if err = rows.Scan(values...); err != nil {
 			log.Error(err)
 		}
+		s.CallMethod(AfterQuery, dest.Addr().Interface())
 		destSlice.Set(reflect.Append(destSlice, dest))
 	}
 	return
