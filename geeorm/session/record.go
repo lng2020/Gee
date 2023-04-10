@@ -50,32 +50,3 @@ func (s *Session) Find(values interface{}) (err error) {
 	}
 	return
 }
-
-// Where function is used to set where condition
-func (s *Session) Where(values ...interface{}) *Session {
-	s.clause.Set(clause.WHERE, values...)
-	return s
-}
-
-// Delete function is used to delete records from database
-func (s *Session) Delete() (result sql.Result, err error) {
-	table := s.RefTable()
-	s.clause.Set(clause.DELETE, table.Name)
-	sql, vars := s.clause.Build(clause.DELETE, clause.WHERE)
-	if result, err = s.Raw(sql, vars...).Exec(); err != nil {
-		log.Error(err)
-	}
-	return
-}
-
-// Limit function is used to set limit condition
-func (s *Session) Limit(limit int) *Session {
-	s.clause.Set(clause.LIMIT, limit)
-	return s
-}
-
-// OrderBy function is used to set order by condition
-func (s *Session) OrderBy(orderBy string) *Session {
-	s.clause.Set(clause.ORDERBY, orderBy)
-	return s
-}

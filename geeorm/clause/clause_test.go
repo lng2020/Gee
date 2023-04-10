@@ -46,21 +46,6 @@ func TestGenValues(t *testing.T) {
 	}
 }
 
-// test genDelete function in clause.go
-func TestGenDelete(t *testing.T) {
-	var clause Clause
-	clause.Set(DELETE, "User")
-	clause.Set(WHERE, "name = ?", "Tom")
-	sql, vars := clause.Build(DELETE, WHERE)
-	t.Log(sql, vars)
-	if sql != "DELETE FROM User WHERE name = ?" {
-		t.Fatal("failed to build SQL")
-	}
-	if !reflect.DeepEqual(vars, []interface{}{"Tom"}) {
-		t.Fatal("failed to build SQL vars")
-	}
-}
-
 // test genLimit function in clause.go
 func TestGenLimit(t *testing.T) {
 	var clause Clause

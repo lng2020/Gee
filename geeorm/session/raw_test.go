@@ -13,7 +13,7 @@ var TestDB *sql.DB
 var TestDialect, _ = dialect.GetDialect("sqlite3")
 
 func TestMain(m *testing.M) {
-	TestDB, _ = sql.Open("sqlite3", "geeorm.db")
+	TestDB, _ = sql.Open("sqlite3", "../geeorm.db")
 	code := m.Run()
 	_ = TestDB.Close()
 	os.Exit(code)

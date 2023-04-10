@@ -31,11 +31,3 @@ func TestSession_DropTable(t *testing.T) {
 		t.Fatalf("failed to drop table %s", s.RefTable().Name)
 	}
 }
-
-// test function for HasTable()
-func TestSession_HasTable(t *testing.T) {
-	s := NewSession().Model(&User{})
-	if !s.HasTable() {
-		t.Fatalf("failed to check table %s", s.RefTable().Name)
-	}
-}

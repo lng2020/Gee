@@ -12,8 +12,6 @@ func init() {
 	generators[INSERT] = genInsert
 	generators[VALUES] = genValues
 	generators[SELECT] = genSelect
-	generators[UPDATE] = genUpdate
-	generators[DELETE] = genDelete
 	generators[LIMIT] = genLimit
 	generators[ORDERBY] = genOrderBy
 	generators[WHERE] = genWhere
@@ -55,27 +53,6 @@ func genSelect(values ...interface{}) (string, []interface{}) {
 	tableName := values[0].(string)
 	fields := strings.Join(values[1].([]string), ", ")
 	return "SELECT " + fields + " FROM " + tableName, []interface{}{}
-}
-
-func genUpdate(values ...interface{}) (string, []interface{}) {
-	tableName := values[0].(string)
-	var sql strings.Builder
-	var vars []interface{}
-	sql.WriteString("UPDATE " + tableName + " SET ")
-
-	for i, field := range values[1].([]string) {
-		if i > 0 {
-			sql.WriteString(", ")
-		}
-		sql.WriteString(field + " = ?")
-		vars = append(vars, values[i+2])
-	}
-
-	return sql.String(), vars
-}
-
-func genDelete(values ...interface{}) (string, []interface{}) {
-	return "DELETE FROM " + values[0].(string), []interface{}{}
 }
 
 func genLimit(values ...interface{}) (string, []interface{}) {
