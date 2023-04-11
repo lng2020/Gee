@@ -41,6 +41,10 @@ func (s *Session) DropTable() error {
 
 // HasTable returns true if the table of current model exists
 func (s *Session) HasTable() bool {
+	if s.refTable == nil {
+		log.Error("Model is not set")
+		return false
+	}
 	sql, vars := s.dialect.TableExistSQL(s.RefTable().Name)
 	row := s.Raw(sql, vars...).QueryRow()
 	var tmp string

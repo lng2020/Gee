@@ -39,3 +39,24 @@ func (engine *Engine) NewSession() *session.Session {
 	dialect, _ := dialect.GetDialect("sqlite3")
 	return session.New(engine.db, dialect)
 }
+
+type TxFunc func(*session.Session) (interface{}, error)
+
+func (engine *Engine) Transaction(f TxFunc) (result interface{}, err error) {
+	s := engine.NewSession()
+	if err = s.Begin(); err != nil {
+		return
+	}
+	defer func() {
+		if p := recover(); p != nil {
+			_ = s.Rollback()
+			panic(p)
+		} else if err != nil {
+			_ = s.Rollback()
+		} else {
+			err = s.Commit()
+		}
+	}()
+
+	return f(s)
+}
