@@ -1,11 +1,11 @@
 package main
 
 import (
-	"encoding/json"
 	"goTinyToys/geerpc"
-	"goTinyToys/geerpc/codec"
 	"log"
 	"net"
+	"sync"
+	"time"
 )
 
 func startServer(addr chan string) {
@@ -20,26 +20,28 @@ func startServer(addr chan string) {
 }
 
 func main() {
+	log.SetFlags(0)
 	addr := make(chan string)
 	go startServer(addr)
+	client, _ := geerpc.Dial("tcp", <-addr)
+	defer func() { _ = client.Close() }()
 
-	conn, _ := net.Dial("tcp", <-addr)
-	defer func() { _ = conn.Close() }()
-
-	_ = json.NewEncoder(conn).Encode(geerpc.DefaultOption)
-	cc := codec.NewGobCodec(conn)
+	time.Sleep(time.Second)
+	var wg sync.WaitGroup
 	for i := 0; i < 5; i++ {
-		// send option
-		_ = json.NewEncoder(conn).Encode(geerpc.DefaultOption)
-		// send request
-		h := &codec.Header{
-			ServiceMethod: "Foo.Sum",
-			Seq:           uint64(i),
-		}
-		_ = cc.Write(h, geerpc.DefaultOption)
-		// receive response
-		_ = cc.ReadHeader(h)
-		var reply int
-		_ = cc.ReadBody(&reply)
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			args := &geerpc.Args{A: i, B: i * i}
+			var reply int
+			err := client.Call("Arith.Multiply", args, &reply)
+			if err != nil {
+				log.Println("call Arith.Multiply error:", err)
+			} else {
+				log.Printf("%d * %d = %d", args.A, args.B, reply)
+			}
+		}(i)
 	}
+
+	wg.Wait()
 }
