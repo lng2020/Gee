@@ -2,10 +2,12 @@ package geerpc
 
 import (
 	"encoding/json"
+	"errors"
 	"goTinyToys/geerpc/codec"
 	"io"
 	"log"
 	"net"
+	"reflect"
 	"sync"
 )
 
@@ -19,7 +21,9 @@ var DefaultOption = &Option{
 	CodecType:   codec.GobType,
 }
 
-type Server struct{}
+type Server struct {
+	serviceMap sync.Map
+}
 
 func NewServer() *Server {
 	return &Server{}
@@ -44,6 +48,10 @@ func (s *Server) Accept(lis net.Listener) {
 	}
 }
 
+func Accept(lis net.Listener) {
+	DefaultServer.Accept(lis)
+}
+
 func (s *Server) ServeConn(conn net.Conn) {
 	defer func() { _ = conn.Close() }()
 
@@ -65,10 +73,6 @@ func (s *Server) ServeConn(conn net.Conn) {
 
 	serverCodec := f(conn)
 	s.ServeCodec(serverCodec)
-}
-
-func (s *Server) Register(rcvr interface{}) error {
-	return s.Register(rcvr)
 }
 
 func (s *Server) ServeCodec(cc codec.Codec) {
@@ -144,16 +148,20 @@ func (s *Server) handleRequest(cc codec.Codec, req *request, sending *sync.Mutex
 	}
 
 	// call service
-	returns := s.call(svc, mtype, req.argv)
+	returns := svc.call(mtype.method.Name, reflect.ValueOf(req.argv), reflect.ValueOf(req.replyv))
 	s.sendResponse(cc, req.h, returns, sending)
 }
 
 // findService finds the service registered with the given name.
 func (s *Server) findService(serviceMethod string) (svc *service, mtype *methodType, err error) {
-	return
-}
-
-// call calls the service with the given request arguments.
-func (s *Server) call(svc *service, mtype *methodType, argv interface{}) (replyv interface{}) {
+	s.serviceMap.Range(func(key, value interface{}) bool {
+		svc = value.(*service)
+		mtype = svc.methods[serviceMethod]
+		if mtype == nil {
+			err = errors.New("method not found: " + serviceMethod)
+			return false
+		}
+		return true
+	})
 	return
 }

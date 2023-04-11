@@ -1,18 +1,45 @@
 package main
 
 import (
-	"fmt"
-	"goTinyToys/geeorm"
+	"encoding/json"
+	"goTinyToys/geerpc"
+	"goTinyToys/geerpc/codec"
+	"log"
+	"net"
 )
 
+func startServer(addr chan string) {
+	l, err := net.Listen("tcp", ":0")
+	if err != nil {
+		log.Fatal("network error:", err)
+	}
+
+	log.Println("start rpc server on", l.Addr())
+	addr <- l.Addr().String()
+	geerpc.Accept(l)
+}
+
 func main() {
-	engine, _ := geeorm.NewEngine("sqlite3", "./geeorm/geeorm.db")
-	defer engine.Close()
-	s := engine.NewSession()
-	_, _ = s.Raw("DROP TABLE IF EXISTS User;").Exec()
-	_, _ = s.Raw("CREATE TABLE User(Name text);").Exec()
-	_, _ = s.Raw("CREATE TABLE User(Name text);").Exec()
-	result, _ := s.Raw("INSERT INTO User(`Name`) values (?), (?)", "Tom", "Sam").Exec()
-	count, _ := result.RowsAffected()
-	fmt.Printf("Exec success, %d affected\n", count)
+	addr := make(chan string)
+	go startServer(addr)
+
+	conn, _ := net.Dial("tcp", <-addr)
+	defer func() { _ = conn.Close() }()
+
+	_ = json.NewEncoder(conn).Encode(geerpc.DefaultOption)
+	cc := codec.NewGobCodec(conn)
+	for i := 0; i < 5; i++ {
+		// send option
+		_ = json.NewEncoder(conn).Encode(geerpc.DefaultOption)
+		// send request
+		h := &codec.Header{
+			ServiceMethod: "Foo.Sum",
+			Seq:           uint64(i),
+		}
+		_ = cc.Write(h, geerpc.DefaultOption)
+		// receive response
+		_ = cc.ReadHeader(h)
+		var reply int
+		_ = cc.ReadBody(&reply)
+	}
 }
