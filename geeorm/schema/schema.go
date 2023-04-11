@@ -51,3 +51,8 @@ func (schema *Schema) RecordValues(dest interface{}) []interface{} {
 	}
 	return fieldValues
 }
+
+// function get field by name
+func (schema *Schema) GetField(name string) *Field {
+	return schema.FieldMap[name]
+}

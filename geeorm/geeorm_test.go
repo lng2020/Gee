@@ -64,3 +64,21 @@ func Test_Transaction(t *testing.T) {
 		}
 	})
 }
+
+func Test_Migrate(t *testing.T) {
+	engine := OpenDB(t)
+	defer engine.Close()
+
+	s := engine.NewSession()
+	_, _ = s.Raw("DROP TABLE IF EXISTS User;").Exec()
+	_, _ = s.Raw("CREATE TABLE User(Name text);").Exec()
+	_, _ = s.Raw("INSERT INTO User(`Name`) values (?), (?)", "Tom", "Sam").Exec()
+	engine.Migrate(&User{})
+
+	rows, _ := s.Raw("SELECT * FROM User;").QueryRows()
+	column, _ := rows.Columns()
+	if len(column) != 2 || column[0] != "Name" || column[1] != "Age" {
+		t.Fatal("Failed to migrate, got columns", column)
+	}
+
+}
